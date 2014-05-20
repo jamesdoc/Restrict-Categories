@@ -561,7 +561,7 @@ class RestrictCategories{
 		
 			$cat = $cats[0];
 			echo '<input type="hidden" name="post_category[]" value="' . $cat->term_id. '" />';
-			echo '<p>Your post will in the <strong>' . $cat->name . '</strong> section.</p>';
+			echo '<p>Your post will be in the <strong>' . $cat->name . '</strong> section.</p>';
 		
 		} else {
 			
