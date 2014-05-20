@@ -1,10 +1,10 @@
 <?php
 /*
-Plugin Name: Restrict Categories
+Plugin Name: Restrict Categories (VAM Forked)
 Description: Restrict the categories that users can view, add, and edit in the admin panel.
-Author: Matthew Muro
+Author: Matthew Muro (Modified by James Doc)
 Author URI: http://matthewmuro.com
-Version: 2.6.3
+Version: 2.6.4x
 */
 
 /*
@@ -533,6 +533,55 @@ class RestrictCategories{
 		// Make sure to exclude terms from $pages array as well as the Category screen
 		if ( in_array( $pagenow, $pages ) || ( $pagenow == 'edit-tags.php' && $_GET['taxonomy'] == 'category' ) || ( defined ( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST ) )
 			add_filter( 'list_terms_exclusions', array( &$this, 'exclusions' ) );
+		
+		// James Doc 
+		// Remove default category metabox
+		remove_meta_box( 'categorydiv','post','normal' ); // Category Metabox
+		
+		// Add in shiny new category metabox
+		add_meta_box( 
+            'rc_categorydiv',
+            'Section',
+            array( &$this, 'rc_custom_categories_meta_box' ),
+            'post',
+            'side',
+            'default'
+        );
+	}
+	
+	/**
+	 * Adds custom meta box to select restricted categories
+	 */
+	public function rc_custom_categories_meta_box($post){
+		
+		$cats = get_categories();
+		$post_cats = wp_get_post_categories($post->ID);
+				
+		if(count($cats) == 1){
+		
+			$cat = $cats[0];
+			echo '<input type="hidden" name="post_category[]" value="' . $cat->term_id. '" />';
+			echo '<p>Your post will in the <strong>' . $cat->name . '</strong> section.</p>';
+		
+		} else {
+			
+			echo '<div class="categorydiv"><div class="tabs-panel">';
+			foreach($cats as $cat) {
+			
+				if(count($post_cats) == 0 || in_array($cat->term_id, $post_cats)){ $checked = "checked"; } else { $checked = ""; }
+			
+				echo '
+					<p>
+						<label>
+							<input type="checkbox" name="post_category[]" value="' . $cat->term_id. '" ' . $checked . ' />
+							' . $cat->name. '
+						</label>
+					</p>
+				';
+			}
+			echo '</div></div>';
+			
+		}
 	}
 
 	/**
