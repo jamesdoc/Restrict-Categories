@@ -472,7 +472,10 @@ class RestrictCategories{
 
 			// Build the category list
 			foreach ( $settings_user[ $user_login . '_user_cats' ] as $category ) {
-				$term_id = get_term_by( 'slug', $category, 'category' )->term_id;
+				$term = get_term_by( 'slug', $category, 'category' );
+
+				if(!$term){ continue; }
+                $term_id = $term->term_id;
 
 				// If WPML is installed, return the translated ID
 				if ( function_exists( 'icl_object_id' ) )
@@ -492,7 +495,10 @@ class RestrictCategories{
 
 					// Build the category list
 					foreach ( $settings[ $key . '_cats' ] as $category ) {
-						$term_id = get_term_by( 'slug', $category, 'category' )->term_id;
+						$term = get_term_by( 'slug', $category, 'category' );
+
+						if(!$term){ continue; }
+                        $term_id = $term->term_id;
 
 						// If WPML is installed, return the translated ID
 						if ( function_exists( 'icl_object_id' ) )
