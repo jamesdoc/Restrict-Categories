@@ -42,6 +42,13 @@ class RestrictCategories{
 			// Build options and settings pages.
 			add_action( 'admin_init', array( &$this, 'init' ) );
 			add_action( 'admin_menu', array( &$this, 'add_admin' ) );
+			
+			// Add options to user profile page
+			add_action( 'show_user_profile', array( $this,'rc_user_edit_cat_list' ));
+            add_action( 'edit_user_profile', array( $this,'rc_user_edit_cat_list' ));
+            
+            add_action( 'personal_options_update', array( $this,'rc_save_user_cat_list' ));
+            add_action( 'edit_user_profile_update', array( $this,'rc_save_user_cat_list' ));
 
 			// Adds a Settings link to the Plugins page
 			add_filter( 'plugin_action_links', array( &$this, 'rc_plugin_action_links' ), 10, 2 );
@@ -344,8 +351,10 @@ class RestrictCategories{
 		$tab = 'roles';
 
 		// Set variables if the Users tab is selected
+		/*
 		if ( isset( $_GET['type'] ) && $_GET['type'] == 'users' )
-			$tab = 'users';
+					$tab = 'users';
+		*/
 
 		// Setup links for Roles/Users tabs
 		$roles_tab = esc_url( admin_url( 'options-general.php?page=restrict-categories' ) );
@@ -365,10 +374,10 @@ class RestrictCategories{
 			?>
 			</h2>
 
-            <h2 class="nav-tab-wrapper">
+            <?/*<h2 class="nav-tab-wrapper">
             	<a href="<?php echo $roles_tab; ?>" class="nav-tab <?php echo ( $tab == 'roles' ) ? 'nav-tab-active' : ''; ?>"><?php _e( 'Roles', 'restrict-categories' ); ?></a>
                 <a href="<?php echo $users_tab; ?>" class="nav-tab <?php echo ( $tab == 'users' ) ? 'nav-tab-active' : ''; ?>"><?php _e( 'Users', 'restrict-categories' ); ?></a>
-            </h2>
+            </h2>*/?>
 
 			<?php
                 // Create a new instance of our user/roles boxes class
@@ -461,7 +470,7 @@ class RestrictCategories{
 		$settings = get_option( 'RestrictCats_options' );
 
 		// Get selected categories for Users
-		$settings_user = get_option( 'RestrictCats_user_options' );
+		$settings_user = get_option( 'restrict_categories_user_access' );
 
 		// For users, strip out the placeholder category, which is only used to make sure the checkboxes work
 		if ( is_array( $settings_user ) && array_key_exists( $user_login . '_user_cats', $settings_user ) )
@@ -625,6 +634,91 @@ class RestrictCategories{
 
 		return $excluded;
 	}
+	
+	
+	/**
+	 * Allow modification of users from their user settings page
+	 */ 
+    public function rc_user_edit_cat_list( $user ) { 
+		
+		// Make sure user has permissions to manage the options            
+        if ( !current_user_can( 'manage_options' ) ) { return false; }
+        
+        // Make sure user is not trying to edit themselves
+        global $current_user;
+        get_currentuserinfo();
+        if ($current_user->ID == $user->ID) { return false; }
+        
+        $cats = get_categories();
+        $settings = get_option( 'restrict_categories_user_access' );
+        
+        $username = $user->user_login;
+        $user_settings = array();
+        if(isset($settings[$username . '_user_cats'])){
+        	$user_settings = $settings[$username . '_user_cats'];
+        }
+        
+        $select = '';
+        foreach($cats as $cat) {
+        	if(in_array($cat->slug, $user_settings)) { $checked = 'checked'; } else { $checked = ''; }
+    		$select .= '
+				<p>
+					<label>
+						<input type="checkbox" name="RestrictCats_user_options[' . $username . '_user_cats][]" value="' . $cat->slug. '" ' . $checked . ' />
+						' . $cat->name. '
+					</label>
+				</p>
+			';
+        }
+        
+        echo '<h3>Restrict Categories</h3>
+        
+        <table class="form-table">
+            <tr>
+                <th>
+                	<label for="apa_author_postas">User can post in...</label>
+                </th>
+                
+                <td>
+                	<div class="categorydiv"><div class="tabs-panel">'.$select.'<input style="display:none;" type="checkbox" value="RestrictCategoriesDefault" checked="checked" name="RestrictCats_user_options[' . $username . '_user_cats][]"></div></div>
+                </td>
+            </tr>
+        </table>';
+    }
+    
+    /**
+     * Saves user setting page modification to the database...
+     */
+    public function rc_save_user_cat_list( $user ){
+		    	
+    	$opt_name = 'restrict_categories_user_access';
+    	
+    	$settings = get_option( $opt_name );
+    	
+    	$user = get_userdata($user);
+    	$username = $user->user_login;
+    	
+    	// Step one: remove current user settings from array
+    	$user_key = $username . '_user_cats';
+    	
+    	if(is_array($settings) && isset($settings[$user_key])){
+    		unset($settings[$user_key]);
+    	}
+		
+		// if nothing to generate return now
+		if(!isset($_POST['RestrictCats_user_options'])){ return; }
+		
+		if(isset($settings) && is_array($settings)){
+			$settings = array_merge( $settings, $_POST['RestrictCats_user_options'] );
+    	} else {
+	    	$settings = $_POST['RestrictCats_user_options'];
+    	}
+    	    	
+    	// update settings in database
+    	update_option( $opt_name, $settings );
+	    
+	    return;
+    }
 }
 
 /**
