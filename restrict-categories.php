@@ -351,14 +351,12 @@ class RestrictCategories{
 		$tab = 'roles';
 
 		// Set variables if the Users tab is selected
-		/*
-		if ( isset( $_GET['type'] ) && $_GET['type'] == 'users' )
-					$tab = 'users';
-		*/
+		// if ( isset( $_GET['type'] ) && $_GET['type'] == 'users' )
+		// 	$tab = 'users';
 
 		// Setup links for Roles/Users tabs
 		$roles_tab = esc_url( admin_url( 'options-general.php?page=restrict-categories' ) );
-		$users_tab = add_query_arg( 'type', 'users', $roles_tab );
+		//$users_tab = add_query_arg( 'type', 'users', $roles_tab );
 	?>
 
 		<div class="wrap">
@@ -484,7 +482,7 @@ class RestrictCategories{
 				$term = get_term_by( 'slug', $category, 'category' );
 
 				if(!$term){ continue; }
-                $term_id = $term->term_id;
+                	$term_id = $term->term_id;
 
 				// If WPML is installed, return the translated ID
 				if ( function_exists( 'icl_object_id' ) )
@@ -552,7 +550,7 @@ class RestrictCategories{
 		// James Doc 
 		// Remove default category metabox
 		remove_meta_box( 'categorydiv','post','normal' ); // Category Metabox
-		
+
 		// Add in shiny new category metabox
 		add_meta_box( 
             'rc_categorydiv',
@@ -571,20 +569,21 @@ class RestrictCategories{
 		
 		$cats = get_categories();
 		$post_cats = wp_get_post_categories($post->ID);
-				
+
 		if(count($cats) == 1){
-		
+
 			$cat = $cats[0];
 			echo '<input type="hidden" name="post_category[]" value="' . $cat->term_id. '" />';
 			echo '<p>Your post will be in the <strong>' . $cat->name . '</strong> section.</p>';
-		
+
 		} else {
+
+			echo '<div style="min-height: 42px;max-height: 200px;overflow: auto;padding: 0 .9em;border: solid 1px #dfdfdf;background-color: #fdfdfd;">';
 			
-			echo '<div class="categorydiv"><div class="tabs-panel">';
 			foreach($cats as $cat) {
-			
+
 				if(count($post_cats) == 0 || in_array($cat->term_id, $post_cats)){ $checked = "checked"; } else { $checked = ""; }
-			
+
 				echo '
 					<p>
 						<label>
@@ -594,11 +593,13 @@ class RestrictCategories{
 					</p>
 				';
 			}
-			echo '</div></div>';
 			
+			echo '</div>';
+
 		}
 	}
-
+	
+	
 	/**
 	 * Remove posts from edit.php with restricted categories
 	 *
@@ -634,13 +635,14 @@ class RestrictCategories{
 
 		return $excluded;
 	}
-	
-	
-	/**
+
+
+
+/**
 	 * Allow modification of users from their user settings page
 	 */ 
     public function rc_user_edit_cat_list( $user ) { 
-		
+
 		// Make sure user has permissions to manage the options            
         if ( !current_user_can( 'manage_options' ) ) { return false; }
         
@@ -676,7 +678,8 @@ class RestrictCategories{
         <table class="form-table">
             <tr>
                 <th>
-                	<label for="apa_author_postas">User can post in...</label>
+                	<label for="apa_author_postas">User can post in...</label><br />
+                	<small style="font-weight: normal">Note: if no categories are selected the user will be able to post in <em>all categories</em>.</small>
                 </th>
                 
                 <td>
@@ -690,7 +693,7 @@ class RestrictCategories{
      * Saves user setting page modification to the database...
      */
     public function rc_save_user_cat_list( $user ){
-		    	
+
     	$opt_name = 'restrict_categories_user_access';
     	
     	$settings = get_option( $opt_name );
@@ -704,10 +707,10 @@ class RestrictCategories{
     	if(is_array($settings) && isset($settings[$user_key])){
     		unset($settings[$user_key]);
     	}
-		
+
 		// if nothing to generate return now
 		if(!isset($_POST['RestrictCats_user_options'])){ return; }
-		
+
 		if(isset($settings) && is_array($settings)){
 			$settings = array_merge( $settings, $_POST['RestrictCats_user_options'] );
     	} else {
@@ -716,7 +719,7 @@ class RestrictCategories{
     	    	
     	// update settings in database
     	update_option( $opt_name, $settings );
-	    
+
 	    return;
     }
 }
