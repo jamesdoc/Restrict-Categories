@@ -654,7 +654,7 @@ class RestrictCategories{
         $cats = get_categories();
         $settings = get_option( 'restrict_categories_user_access' );
         
-        $username = $user->user_login;
+        $username = $user->user_nicename;
         $user_settings = array();
         if(isset($settings[$username . '_user_cats'])){
         	$user_settings = $settings[$username . '_user_cats'];
@@ -699,7 +699,7 @@ class RestrictCategories{
     	$settings = get_option( $opt_name );
     	
     	$user = get_userdata($user);
-    	$username = $user->user_login;
+    	$username = $user->user_nicename;
     	
     	// Step one: remove current user settings from array
     	$user_key = $username . '_user_cats';
