@@ -653,7 +653,7 @@ class RestrictCategories{
         get_currentuserinfo();
         if ($current_user->ID == $user->ID) { return false; }
         
-        $cats = get_categories();
+        $cats = get_categories(array('hide_empty'=>0));
         $settings = get_option( 'restrict_categories_user_access' );
         
         $username = $user->user_nicename;
