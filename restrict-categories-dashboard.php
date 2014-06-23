@@ -124,10 +124,6 @@ function rc_section_stats(){
 		<table width="100%" style="background-color: #0074a2; color: white; padding: 2%">
 			<?php $ii = 0; foreach ($stats as $stat): ?>
 			
-			<?php
-				if($stat->id = 'last-x-days' && $stat->count > $avg) { $above_avg = TRUE; }
-			?>
-			
 			<?php if($ii == 0): ?>
 			<tr style="padding: 2%">
 				<td colspan="2" width="100%">
@@ -158,12 +154,6 @@ function rc_section_stats(){
 				
 			
 			<?php $ii++; endforeach; ?>
-			
-			<?php if ($above_avg): ?>
-			
-			<tr><td colspan="2"><a href="http://thecatapi.com/api/images/get?format=src" target="_blank" style="color: white;">Congratulations! </a> This section is above average!</td></tr>
-			
-			<?php endif; ?>
 			
 		</table>
 		<?php
