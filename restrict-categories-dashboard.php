@@ -7,7 +7,7 @@ function rc_add_dashboard_widgets() {
 	$settings = get_option( 'restrict_categories_user_access' );
 	$setting_name = $current_user->user_nicename . '_user_cats';
 	
-	if(array_key_exists($setting_name, $settings)){
+	if($settings && array_key_exists($setting_name, $settings)){
 		wp_add_dashboard_widget(
 			'section_stats',
 			'Section Stats',
